@@ -209,7 +209,7 @@ resource "aws_cloudwatch_event_target" "this" {
           oracle = {
             service-name = var.oracle_service
           },
-          connection-string-args = [var.connection-string-args]
+          connection-string-args = var.connection-string-args
         },
         data-classification = var.enable_data_classification,
         account-discovery   = var.enable_account_discovery,

@@ -13,7 +13,7 @@ terraform {
 
 module "cyral_repo_crawler" {
   source                           = "cyralinc/repo-crawler/aws"
-  version                          = "v0.1.0"
+  version                          = ">= 0.1.0"
   crawler_version                  = "v0.5.1"
   crawler_name                     = "cyral-repo-crawler"
   control_plane_host               = "example.cyral.com"

@@ -131,9 +131,9 @@ variable "oracle_service" {
 }
 
 variable "connection-string-args" {
-  type        = string
-  description = "Optional database connection string options, in comma-separated key/value format e.g. \"opt1=val1\",\"opt2=val2\" etc. Note that quotes are necessary around pairs. Omit if not configuring a PostgreSQL-like repo, i.e. Redshift, Denodo, or PostgreSQL."
-  default     = ""
+  type        = list(string)
+  description = "Optional database connection string options, in key/value format e.g. opt1=val1, opt2=val2 etc. Omit if not configuring a PostgreSQL-like repo, i.e. Redshift, Denodo, or PostgreSQL."
+  default     = []
 }
 
 # Lambda and networking configuration
