@@ -12,9 +12,9 @@ terraform {
 }
 
 module "cyral_repo_crawler" {
-  source             = "cyralinc/repo-crawler/aws" # TODO: should we use a different name? -ccampo 2022-11-10
-  version            "
-  crawler_version    = "v0.5.1"
+  source             = "cyralinc/repo-crawler/aws"
+  version            = "~> 0.1"
+  crawler_version    = "v0.5.2"
   control_plane_host = "example.cyral.com"
   repo_type          = "sqlserver"
   repo_name          = "sqlserver-example"

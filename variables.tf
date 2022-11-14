@@ -18,7 +18,12 @@ variable "control_plane_grpc_port" {
 
 variable "cyral_secret_arn" {
   type        = string
-  description = "ARN of the entry in AWS Secrets Manager that stores the secret containing the credentials for the Cyral API. If empty, cyral_client_id and cyral_client_secret must be provided, and a new secret will be created."
+  description = <<EOF
+    ARN of the entry in AWS Secrets Manager that stores the secret containing
+    the credentials for the Cyral API. If empty, cyral_client_id and
+    cyral_client_secret variables must be provided, and a new secret will be
+    created in AWS Secrets Manager.
+  EOF
   default     = ""
 }
 
@@ -73,7 +78,12 @@ variable "repo_port" {
 
 variable "repo_secret_arn" {
   type        = string
-  description = "ARN of the entry in AWS Secrets Manager that stores the secret containing the credentials to connect to the repository. If empty, repo_username and repo_password must be provided, and a new secret will be created."
+  description = <<EOF
+    ARN of the entry in AWS Secrets Manager that stores the secret containing
+    the credentials to connect to the repository. If empty, the repo_username
+    and repo_password variables must be provided, and a new secret will be
+    created in AWS Secrets Manager.
+  EOF
   default     = ""
 }
 
@@ -96,13 +106,13 @@ variable "repo_database" {
 
 variable "repo_sample_size" {
   type        = number
-  description = "Number of rows to sample from each table (default: 5)."
+  description = "Number of rows to sample from each table."
   default     = 5
 }
 
 variable "repo_max_open_conns" {
   type        = number
-  description = "Maximum number of open connections to the database (default: 10)."
+  description = "Maximum number of open connections to the database."
   default     = 10
 }
 
@@ -132,7 +142,12 @@ variable "oracle_service" {
 
 variable "connection-string-args" {
   type        = list(string)
-  description = "Optional database connection string options in `key=value` format: `opt1=val1`, `opt2=val2`, etc. Omit if not configuring a PostgreSQL-like repo, i.e. Redshift, Denodo, or PostgreSQL."
+  description = <<EOF
+    Optional database connection string options in `key=value` format:
+    `opt1=val1`, `opt2=val2`, etc. Currently only works for PostgreSQL-like
+    repos (i.e. Redshift, Denodo, or PostgreSQL), where this list gets
+    serialized into a comma separated string.
+  EOF
   default     = []
 }
 
@@ -144,12 +159,18 @@ variable "vpc_id" {
 
 variable "subnet_ids" {
   type        = list(string)
-  description = "The subnets that the Repo Crawler Lambda function will be deployed to. All subnets must be able to reach both the Cyral Control Plane and the database being crawled. These subnets must also support communication with CloudWatch and Secrets Manager."
+  description = <<EOF
+    The subnets that the Repo Crawler Lambda function will be deployed to. All
+    subnets must be able to reach both the Cyral Control Plane and the database
+    being crawled. These subnets must also support communication with
+    CloudWatch and Secrets Manager, therefore outbound internet access is
+    likely required.
+  EOF
 }
 
 variable "timeout" {
   type        = number
-  description = "The timeout of the Repo Crawler Lambda function, in seconds (default: 300)."
+  description = "The timeout of the Repo Crawler Lambda function, in seconds."
   default     = 300
 }
 
@@ -160,31 +181,50 @@ variable "crawler_version" {
 
 variable "crawler_name" {
   type        = string
-  description = "The name of the Repo Crawler Lambda function. If omitted, it will default to cyral-repo-crawler-<16 character random alphanumeric string>."
+  description = <<EOF
+    The name of the Repo Crawler Lambda function. If omitted, it will default
+    to `cyral-repo-crawler-<16 character random alphanumeric string>`.
+  EOF
   default     = ""
 }
 
 variable "dynamodb_cache_table_name_suffix" {
   type        = string
-  description = "The suffix for the DynamoDB table name used for the classification cache. The full table will be prefixed with the Lambda function name (default: cyralRepoCrawlerCache)."
+  description = <<EOF
+    The suffix for the DynamoDB table name used for the classification cache.
+    The full table will be prefixed with the Lambda function name
+    (default: cyralRepoCrawlerCache).
+  EOF
   default     = "cyralRepoCrawlerCache"
 }
 
 variable "schedule_expression" {
   type        = string
-  description = "Schedule expression to invoke the repo crawler (default: every six hours, i.e. cron(0 0/6 * * ? *))."
+  description = <<EOF
+    Schedule expression to invoke the repo crawler. The default value
+    represents a run schedule of every six hours.
+  EOF
   default     = "cron(0 0/6 * * ? *)"
-  # TODO: validation? -ccampo 2022-11-10
+  validation {
+    condition     = can(regex("^cron\\(([^ ]+ ){5}[^ ]+\\)|rate\\([^ ]+ [^ ]+\\)$", var.schedule_expression))
+    error_message = "Expression must be either cron(...) or rate(...). See https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html."
+  }
 }
 
 variable "enable_data_classification" {
   type        = bool
-  description = "Configures the Crawler to run in data classification mode, i.e., sample and classify data according to a set of existing labels (default: true)."
+  description = <<EOF
+    Configures the Crawler to run in data classification mode, i.e., sample and
+    classify data according to a set of existing labels.
+  EOF
   default     = true
 }
 
 variable "enable_account_discovery" {
   type        = bool
-  description = "Configures the Crawler to run in account discovery mode, i.e., query and discover all existing user accounts in the database (default: true)."
+  description = <<EOF
+    Configures the Crawler to run in account discovery mode, i.e., query and
+    discover all existing user accounts in the database.
+  EOF
   default     = true
 }

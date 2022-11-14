@@ -1,3 +1,13 @@
+/**
+ * # Cyral Repo Crawler AWS module for Terraform
+ *
+ * This is a Terraform module to install the Cyral Repo Crawler as an AWS
+ * Lambda function, including all of its dependencies such as IAM permissions,
+ * a DynamoDB cache, etc.
+ *
+ * See the [examples](./examples) for usage details.
+ */
+
 resource "random_id" "this" {
   byte_length = 8
 }
@@ -27,7 +37,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
 }
 
 data "aws_iam_policy_document" "execution_policy" {
-  # Allows access to the required secrets in Secrets Manager.
+  # Allows access to the necessary secrets in Secrets Manager.
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
     effect    = "Allow"
@@ -51,7 +61,7 @@ data "aws_iam_policy_document" "execution_policy" {
     ]
   }
 
-  # Allows Lambda to create network interfaces. Required to within a VPC.
+  # Allows Lambda to create network interfaces.
   statement {
     actions = [
       "ec2:CreateNetworkInterface",
@@ -128,19 +138,23 @@ resource "aws_secretsmanager_secret" "repo_secret" {
 resource "aws_secretsmanager_secret_version" "cyral_secret_version" {
   count         = var.cyral_secret_arn != "" ? 0 : 1
   secret_id     = aws_secretsmanager_secret.cyral_secret[0].id
-  secret_string = jsonencode({
-    client-id     = var.cyral_client_id,
-    client-secret = var.cyral_client_secret,
-  })
+  secret_string = jsonencode(
+    {
+      client-id     = var.cyral_client_id,
+      client-secret = var.cyral_client_secret,
+    }
+  )
 }
 
 resource "aws_secretsmanager_secret_version" "repo_secret_version" {
   count         = var.repo_secret_arn != "" ? 0 : 1
   secret_id     = aws_secretsmanager_secret.repo_secret[0].id
-  secret_string = jsonencode({
-    username = var.repo_username,
-    password = var.repo_password,
-  })
+  secret_string = jsonencode(
+    {
+      username = var.repo_username,
+      password = var.repo_password,
+    }
+  )
 }
 
 resource "aws_lambda_function" "this" {
@@ -151,6 +165,7 @@ resource "aws_lambda_function" "this" {
   timeout       = var.timeout
   runtime       = "go1.x"
   handler       = "crawler-lambda"
+
   vpc_config {
     security_group_ids = [aws_security_group.this.id]
     subnet_ids         = var.subnet_ids

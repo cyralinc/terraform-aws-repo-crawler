@@ -13,8 +13,8 @@ terraform {
 
 module "cyral_repo_crawler" {
   source              = "cyralinc/repo-crawler/aws"
-  version                = "~> 0.1"
-  crawler_version     = "v0.5.1"
+  version             = "~> 0.1"
+  crawler_version     = "v0.5.2"
   control_plane_host  = "example.cyral.com"
   repo_type           = "snowflake"
   repo_name           = "snowflake-example"
