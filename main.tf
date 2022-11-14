@@ -69,6 +69,8 @@ data "aws_iam_policy_document" "execution_policy" {
       "ec2:DescribeNetworkInterfaces",
     ]
     effect    = "Allow"
+    # These actions don't support resource-level permissions, so we must use
+    # "*". See: https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazonec2.html
     resources = ["*"]
   }
 
@@ -76,6 +78,8 @@ data "aws_iam_policy_document" "execution_policy" {
   statement {
     actions   = ["cloudwatch:PutMetricData"]
     effect    = "Allow"
+    # This action doesn't support resource-level permissions, so we must use
+    # "*". See: https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazoncloudwatch.html
     resources = ["*"]
   }
 
@@ -96,7 +100,7 @@ data "aws_iam_policy_document" "execution_policy" {
     ]
     effect    = "Allow"
     resources = [
-      "arn:aws:dynamodb:*:*:table/${local.dynamodb_cache_table_name}"
+      "arn:${data.aws_partition.current.partition}:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${local.dynamodb_cache_table_name}"
     ]
   }
 }
