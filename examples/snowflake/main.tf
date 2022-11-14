@@ -32,6 +32,6 @@ module "cyral_repo_crawler" {
   # avoid passing confidential values directly in the Terraform config.
   cyral_client_id     = "example_client_id"
   cyral_client_secret = "exampleClientSecret"
-  repo_username       = "exampoeRepoUsername"
-  repo_password       = "exampoeRepoUsername"
+  repo_username       = "exampleRepoUsername"
+  repo_password       = "exampleRepoUsername"
 }

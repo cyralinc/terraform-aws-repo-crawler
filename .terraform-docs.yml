@@ -1,7 +1,5 @@
 formatter: "markdown"
 
-version: ""
-
 header-from: main.tf
 
 output:
