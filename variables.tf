@@ -37,6 +37,7 @@ variable "cyral_client_secret" {
   type        = string
   description = "The client secret to connect to the Cyral API."
   default     = ""
+  sensitive   = true
 }
 
 # Repository configuration
@@ -97,6 +98,7 @@ variable "repo_password" {
   type        = string
   description = "The password to connect to the repository."
   default     = ""
+  sensitive   = true
 }
 
 variable "repo_database" {
