@@ -20,22 +20,29 @@ variable "cyral_secret_arn" {
   type        = string
   description = <<EOF
     ARN of the entry in AWS Secrets Manager that stores the secret containing
-    the credentials for the Cyral API. If empty, cyral_client_id and
-    cyral_client_secret variables must be provided, and a new secret will be
-    created in AWS Secrets Manager.
+    the credentials for the Cyral API. Either this OR the `cyral_client_id` and
+    `cyral_client_secret` variables are REQUIRED. If empty, the
+    `cyral_client_id` and `cyral_client_secret` variables MUST both be
+    provided, and a new secret will be created in AWS Secrets Manager.
   EOF
   default     = ""
 }
 
 variable "cyral_client_id" {
   type        = string
-  description = "The client ID to connect to the Cyral API."
+  description = <<EOF
+    The client ID to connect to the Cyral API. This is REQUIRED if the
+    `cyral_secret_arn` variable is empty.
+  EOF
   default     = ""
 }
 
 variable "cyral_client_secret" {
   type        = string
-  description = "The client secret to connect to the Cyral API."
+  description = <<EOF
+    The client secret to connect to the Cyral API. This is REQUIRED if the
+    `cyral_secret_arn` variable is empty.
+  EOF
   default     = ""
   sensitive   = true
 }
@@ -81,22 +88,29 @@ variable "repo_secret_arn" {
   type        = string
   description = <<EOF
     ARN of the entry in AWS Secrets Manager that stores the secret containing
-    the credentials to connect to the repository. If empty, the repo_username
-    and repo_password variables must be provided, and a new secret will be
-    created in AWS Secrets Manager.
+    the credentials to connect to the repository. Either this OR the
+    `repo_username` and `repo_password` variables are REQUIRED. If empty, the
+    `repo_username` and `repo_password` variables MUST both be provided, and a
+    new secret will be created in AWS Secrets Manager.
   EOF
   default     = ""
 }
 
 variable "repo_username" {
   type        = string
-  description = "The username to connect to the repository."
+  description = <<EOF
+    The username to connect to the repository. This is REQUIRED if the
+    `repo_secret_arn` variable is empty.
+  EOF
   default     = ""
 }
 
 variable "repo_password" {
   type        = string
-  description = "The password to connect to the repository."
+  description = <<EOF
+    The password to connect to the repository. This is REQUIRED if the
+    `repo_secret_arn` variable is empty.
+  EOF
   default     = ""
   sensitive   = true
 }
