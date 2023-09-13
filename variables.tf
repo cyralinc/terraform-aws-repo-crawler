@@ -113,7 +113,7 @@ variable "repo_username" {
   type        = string
   description = <<EOF
     The username to connect to the repository. This is REQUIRED if the
-    `repo_secret_arn` variable is empty and there is no database used
+    `repo_secret_arn` variable is empty and there is no database user
     mapped to the repository on the Control Plane.
   EOF
   default     = ""
