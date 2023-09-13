@@ -56,10 +56,15 @@ variable "repo_name" {
 
 variable "repo_type" {
   type        = string
-  description = "The repository type on the Cyral Control Plane."
+  description = <<EOF
+    The repository type on the Cyral Control Plane. If omitted, the value will
+    be inferred from the Control Plane (crawler versions >= v0.9.0 only).
+  EOF
+  default     = ""
   validation {
     condition = contains(
       [
+        "",
         "sqlserver",
         "mysql",
         "postgresql",
@@ -76,12 +81,20 @@ variable "repo_type" {
 
 variable "repo_host" {
   type        = string
-  description = "The hostname or host address of the database instance."
+  description = <<EOF
+    The hostname or host address of the database instance. If omitted, the value will
+    be inferred from the Control Plane (crawler versions >= v0.9.0 only).
+  EOF
+  default = ""
 }
 
 variable "repo_port" {
   type        = number
-  description = "The port of the database service in the database instance."
+  description = <<EOF
+    The port of the database service in the database instance. If omitted, the value
+    will be inferred from the Control Plane (crawler versions >= v0.9.0 only).
+  EOF
+  default = ""
 }
 
 variable "repo_secret_arn" {
@@ -100,7 +113,8 @@ variable "repo_username" {
   type        = string
   description = <<EOF
     The username to connect to the repository. This is REQUIRED if the
-    `repo_secret_arn` variable is empty.
+    `repo_secret_arn` variable is empty and there is no database user
+    mapped to the repository on the Control Plane.
   EOF
   default     = ""
 }
@@ -117,7 +131,12 @@ variable "repo_password" {
 
 variable "repo_database" {
   type        = string
-  description = "The database on the repository that the repo crawler will connect to."
+  description = <<EOF
+    The database on the repository that the repo crawler will connect to. If
+    omitted, the crawler will attempt to connect to and crawl all databases
+    accessible on the server (crawler versions >= v0.9.0 only).
+  EOF
+  default     = ""
 }
 
 variable "repo_sample_size" {
