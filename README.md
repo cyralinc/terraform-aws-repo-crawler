@@ -88,5 +88,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_repo_crawler_aws_security_group_id"></a> [repo\_crawler\_aws\_security\_group\_id](#output\_repo\_crawler\_aws\_security\_group\_id) | The Amazon Security Group ID of the Repo Crawler Lambda function. |
 | <a name="output_repo_crawler_lambda_function_arn"></a> [repo\_crawler\_lambda\_function\_arn](#output\_repo\_crawler\_lambda\_function\_arn) | The Amazon Resource Name (ARN) of the Repo Crawler Lambda function. |
 <!-- END_TF_DOCS -->
