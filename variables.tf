@@ -94,7 +94,7 @@ variable "repo_port" {
     The port of the database service in the database instance. If omitted, the value
     will be inferred from the Control Plane (crawler versions >= v0.9.0 only).
   EOF
-  default = ""
+  default = null
 }
 
 variable "repo_secret_arn" {
