@@ -167,8 +167,8 @@ resource "aws_lambda_function" "this" {
   s3_bucket     = "cyral-public-assets-${data.aws_region.current.name}"
   s3_key        = "cyral-repo-crawler/${var.crawler_version}/cyral-repo-crawler-lambda-${var.crawler_version}.zip"
   timeout       = var.timeout
-  runtime       = "go1.x"
-  handler       = "crawler-lambda"
+  runtime       = "provided.al2"
+  handler       = "bootstrap"
 
   vpc_config {
     security_group_ids = [aws_security_group.this.id]
