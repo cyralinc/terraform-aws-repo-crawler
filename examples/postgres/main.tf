@@ -14,7 +14,7 @@ terraform {
 module "cyral_repo_crawler" {
   source                 = "cyralinc/repo-crawler/aws"
   version                = "~> 0.1"
-  crawler_version        = "v0.9.3"
+  crawler_version        = "v0.11.1"
   control_plane_host     = "example.cyral.com"
   repo_type              = "postgresql"
   repo_name              = "postgres-example"
