@@ -145,10 +145,60 @@ variable "repo_sample_size" {
   default     = 5
 }
 
+variable "repo_query_timeout" {
+  type        = string
+  description = <<EOF
+    The maximum time any query can take before being canceled, as a duration
+    string, e.g. 10s or 5m. If zero or negative, there is no timeout.
+  EOF
+  default     = "0s"
+}
+
 variable "repo_max_open_conns" {
   type        = number
   description = "Maximum number of open connections to the database."
   default     = 10
+}
+
+variable "repo_max_parallel_dbs" {
+  type        = number
+  description = <<EOF
+    Advanced option to configure the maximum number of databases to crawl in
+    parallel. This only applies if sampling all databases on the server, i.e.
+    if the database is omitted. If zero, there is no limit.
+  EOF
+  default     = 0
+}
+
+variable "repo_max_concurrency" {
+  type        = number
+  description = <<EOF
+    Advanced option to configure the maximum number of concurrent query
+    goroutines. If zero, there is no limit. Applies on a per-database level.
+    Each database crawled in parallel will have its own set of concurrent
+    queries, bounded by this limit. If zero, there is no limit.
+  EOF
+  default     = 0
+}
+
+variable "repo_include_paths" {
+  type        = string
+  description = <<EOF
+    A comma-separated list of glob patterns, in the format
+    <database>.<schema>.<table>, which represent paths to include when crawling
+    the database. If empty or * (default), all paths are included.
+  EOF
+  default     = "*"
+}
+
+variable "repo_exclude_paths" {
+  type        = string
+  description = <<EOF
+    A comma-separated list of glob patterns, in the format
+    <database>.<schema>.<table>, which represent paths to exclude when crawling
+    the database. If empty (default), no paths are excluded.
+  EOF
+  default     = ""
 }
 
 variable "snowflake_account" {
