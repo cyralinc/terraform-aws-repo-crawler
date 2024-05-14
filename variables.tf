@@ -1,7 +1,7 @@
 # Cyral Configuration
 variable "control_plane_host" {
   type        = string
-  description = "The host for the Cyral Control Plane API, e.g. tenant.cyral.com."
+  description = "The host for the Cyral Control Plane API, e.g. tenant.app.cyral.com."
 }
 
 variable "control_plane_rest_port" {
@@ -185,7 +185,7 @@ variable "repo_include_paths" {
   type        = string
   description = <<EOF
     A comma-separated list of glob patterns, in the format
-    <database>.<schema>.<table>, which represent paths to include when crawling
+    `database.schema.table`, which represent paths to include when crawling
     the database. If empty or * (default), all paths are included.
   EOF
   default     = "*"
@@ -195,7 +195,7 @@ variable "repo_exclude_paths" {
   type        = string
   description = <<EOF
     A comma-separated list of glob patterns, in the format
-    <database>.<schema>.<table>, which represent paths to exclude when crawling
+    `database.schema.table`, which represent paths to exclude when crawling
     the database. If empty (default), no paths are excluded.
   EOF
   default     = ""
@@ -268,7 +268,7 @@ variable "crawler_name" {
   type        = string
   description = <<EOF
     The name of the Repo Crawler Lambda function. If omitted, it will default
-    to `cyral-repo-crawler-<16 character random alphanumeric string>`.
+    to `cyral-repo-crawler-16 character random alphanumeric string`.
   EOF
   default     = ""
 }
