@@ -6,21 +6,23 @@ This is a Terraform module to install the Cyral Repo Crawler as an AWS
 Lambda function, including all of its dependencies such as IAM permissions,
 a DynamoDB cache, etc.
 
-See the [examples](./examples) for usage details.
+Addtional resources will need to be created to trigger it with the correct parameters. Most importantly an Event Bridge rule with configuration.
+
+See the [Deployments](./DEPLOYMENT.md) for usage details.
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.14 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.0, < 6.0.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 4.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0, < 6.0.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.1 |
 
 ## Modules
@@ -31,16 +33,11 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_cloudwatch_event_rule.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
-| [aws_cloudwatch_event_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_dynamodb_table.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dynamodb_table) | resource |
 | [aws_iam_role.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_lambda_function.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
-| [aws_lambda_permission.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
 | [aws_secretsmanager_secret.cyral_secret](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
-| [aws_secretsmanager_secret.repo_secret](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
 | [aws_secretsmanager_secret_version.cyral_secret_version](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
-| [aws_secretsmanager_secret_version.repo_secret_version](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [random_id.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
@@ -53,7 +50,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_connection-string-args"></a> [connection-string-args](#input\_connection-string-args) | Optional database connection string options in `key=value` format:<br>    `opt1=val1`, `opt2=val2`, etc. Currently only works for PostgreSQL-like<br>    repos (i.e. Redshift, Denodo, or PostgreSQL), where this list gets<br>    serialized into a comma separated string. | `list(string)` | `[]` | no |
 | <a name="input_control_plane_grpc_port"></a> [control\_plane\_grpc\_port](#input\_control\_plane\_grpc\_port) | The TCP/IP port for the Cyral Control Plane gRPC API (default: 443). | `number` | `443` | no |
 | <a name="input_control_plane_host"></a> [control\_plane\_host](#input\_control\_plane\_host) | The host for the Cyral Control Plane API, e.g. tenant.app.cyral.com. | `string` | n/a | yes |
 | <a name="input_control_plane_rest_port"></a> [control\_plane\_rest\_port](#input\_control\_plane\_rest\_port) | The TCP/IP port for the Cyral Control Plane REST API. (default: 443) | `number` | `443` | no |
@@ -63,31 +59,10 @@ No modules.
 | <a name="input_cyral_client_secret"></a> [cyral\_client\_secret](#input\_cyral\_client\_secret) | The client secret to connect to the Cyral API. This is REQUIRED if the<br>    `cyral_secret_arn` variable is empty. | `string` | `""` | no |
 | <a name="input_cyral_secret_arn"></a> [cyral\_secret\_arn](#input\_cyral\_secret\_arn) | ARN of the entry in AWS Secrets Manager that stores the secret containing<br>    the credentials for the Cyral API. Either this OR the `cyral_client_id` and<br>    `cyral_client_secret` variables are REQUIRED. If empty, the<br>    `cyral_client_id` and `cyral_client_secret` variables MUST both be<br>    provided, and a new secret will be created in AWS Secrets Manager. | `string` | `""` | no |
 | <a name="input_dynamodb_cache_table_name_suffix"></a> [dynamodb\_cache\_table\_name\_suffix](#input\_dynamodb\_cache\_table\_name\_suffix) | The suffix for the DynamoDB table name used for the classification cache.<br>    The full table will be prefixed with the Lambda function name<br>    (default: cyralRepoCrawlerCache). | `string` | `"cyralRepoCrawlerCache"` | no |
-| <a name="input_enable_account_discovery"></a> [enable\_account\_discovery](#input\_enable\_account\_discovery) | Configures the Crawler to run in account discovery mode, i.e., query and<br>    discover all existing user accounts in the database. | `bool` | `true` | no |
-| <a name="input_enable_data_classification"></a> [enable\_data\_classification](#input\_enable\_data\_classification) | Configures the Crawler to run in data classification mode, i.e., sample and<br>    classify data according to a set of existing labels. | `bool` | `true` | no |
-| <a name="input_oracle_service"></a> [oracle\_service](#input\_oracle\_service) | The Oracle service name. Omit if not configuring an Oracle repo. | `string` | `""` | no |
-| <a name="input_repo_database"></a> [repo\_database](#input\_repo\_database) | The database on the repository that the repo crawler will connect to. If<br>    omitted, the crawler will attempt to connect to and crawl all databases<br>    accessible on the server (crawler versions >= v0.9.0 only). | `string` | `""` | no |
-| <a name="input_repo_exclude_paths"></a> [repo\_exclude\_paths](#input\_repo\_exclude\_paths) | A comma-separated list of glob patterns, in the format<br>    `database.schema.table`, which represent paths to exclude when crawling<br>    the database. If empty (default), no paths are excluded. | `string` | `""` | no |
-| <a name="input_repo_host"></a> [repo\_host](#input\_repo\_host) | The hostname or host address of the database instance. If omitted, the value will<br>    be inferred from the Control Plane (crawler versions >= v0.9.0 only). | `string` | `""` | no |
-| <a name="input_repo_include_paths"></a> [repo\_include\_paths](#input\_repo\_include\_paths) | A comma-separated list of glob patterns, in the format<br>    `database.schema.table`, which represent paths to include when crawling<br>    the database. If empty or * (default), all paths are included. | `string` | `"*"` | no |
-| <a name="input_repo_max_concurrency"></a> [repo\_max\_concurrency](#input\_repo\_max\_concurrency) | Advanced option to configure the maximum number of concurrent query<br>    goroutines. If zero, there is no limit. Applies on a per-database level.<br>    Each database crawled in parallel will have its own set of concurrent<br>    queries, bounded by this limit. If zero, there is no limit. | `number` | `0` | no |
-| <a name="input_repo_max_open_conns"></a> [repo\_max\_open\_conns](#input\_repo\_max\_open\_conns) | Maximum number of open connections to the database. | `number` | `10` | no |
-| <a name="input_repo_max_parallel_dbs"></a> [repo\_max\_parallel\_dbs](#input\_repo\_max\_parallel\_dbs) | Advanced option to configure the maximum number of databases to crawl in<br>    parallel. This only applies if sampling all databases on the server, i.e.<br>    if the database is omitted. If zero, there is no limit. | `number` | `0` | no |
-| <a name="input_repo_name"></a> [repo\_name](#input\_repo\_name) | The repository name on the Cyral Control Plane. | `string` | n/a | yes |
-| <a name="input_repo_password"></a> [repo\_password](#input\_repo\_password) | The password to connect to the repository. This is REQUIRED if the<br>    `repo_secret_arn` variable is empty. | `string` | `""` | no |
-| <a name="input_repo_port"></a> [repo\_port](#input\_repo\_port) | The port of the database service in the database instance. If omitted, the value<br>    will be inferred from the Control Plane (crawler versions >= v0.9.0 only). | `number` | `null` | no |
-| <a name="input_repo_query_timeout"></a> [repo\_query\_timeout](#input\_repo\_query\_timeout) | The maximum time any query can take before being canceled, as a duration<br>    string, e.g. 10s or 5m. If zero or negative, there is no timeout. | `string` | `"0s"` | no |
-| <a name="input_repo_sample_size"></a> [repo\_sample\_size](#input\_repo\_sample\_size) | Number of rows to sample from each table. | `number` | `5` | no |
-| <a name="input_repo_secret_arn"></a> [repo\_secret\_arn](#input\_repo\_secret\_arn) | ARN of the entry in AWS Secrets Manager that stores the secret containing<br>    the credentials to connect to the repository. Either this OR the<br>    `repo_username` and `repo_password` variables are REQUIRED. If empty, the<br>    `repo_username` and `repo_password` variables MUST both be provided, and a<br>    new secret will be created in AWS Secrets Manager. | `string` | `""` | no |
-| <a name="input_repo_type"></a> [repo\_type](#input\_repo\_type) | The repository type on the Cyral Control Plane. If omitted, the value will<br>    be inferred from the Control Plane (crawler versions >= v0.9.0 only). | `string` | `""` | no |
-| <a name="input_repo_username"></a> [repo\_username](#input\_repo\_username) | The username to connect to the repository. This is REQUIRED if the<br>    `repo_secret_arn` variable is empty and there is no database user<br>    mapped to the repository on the Control Plane. | `string` | `""` | no |
-| <a name="input_schedule_expression"></a> [schedule\_expression](#input\_schedule\_expression) | Schedule expression to invoke the repo crawler. The default value<br>    represents a run schedule of every six hours. | `string` | `"cron(0 0/6 * * ? *)"` | no |
-| <a name="input_snowflake_account"></a> [snowflake\_account](#input\_snowflake\_account) | The Snowflake account. Omit if not configuring a Snowflake repo. | `string` | `""` | no |
-| <a name="input_snowflake_role"></a> [snowflake\_role](#input\_snowflake\_role) | The Snowflake role. Omit if not configuring a Snowflake repo. | `string` | `""` | no |
-| <a name="input_snowflake_warehouse"></a> [snowflake\_warehouse](#input\_snowflake\_warehouse) | The Snowflake warehouse. Omit if not configuring a Snowflake repo. | `string` | `""` | no |
-| <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | The subnets that the Repo Crawler Lambda function will be deployed to. All<br>    subnets must be able to reach both the Cyral Control Plane and the database<br>    being crawled. These subnets must also support communication with<br>    CloudWatch and Secrets Manager, therefore outbound internet access is<br>    likely required. | `list(string)` | n/a | yes |
+| <a name="input_repo_secret_arns"></a> [repo\_secret\_arns](#input\_repo\_secret\_arns) | Secret ARN's to provide get access for the lambda. | `list(string)` | n/a | yes |
+| <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | The subnets that the Repo Crawler Lambda function will be deployed to. All<br>    subnets must be able to reach both the Cyral Control Plane and the database<br>    being crawled. These subnets must also support communication with<br>    CloudWatch and Secrets Manager, therefore outbound internet access is<br>    likely required. | `list(string)` | <pre>[<br>  ""<br>]</pre> | no |
 | <a name="input_timeout"></a> [timeout](#input\_timeout) | The timeout of the Repo Crawler Lambda function, in seconds. | `number` | `300` | no |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC the lambda will be attached to. | `string` | n/a | yes |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC the lambda will be attached to. | `string` | `""` | no |
 
 ## Outputs
 
@@ -95,4 +70,5 @@ No modules.
 |------|-------------|
 | <a name="output_repo_crawler_aws_security_group_id"></a> [repo\_crawler\_aws\_security\_group\_id](#output\_repo\_crawler\_aws\_security\_group\_id) | The Amazon Security Group ID of the Repo Crawler Lambda function. |
 | <a name="output_repo_crawler_lambda_function_arn"></a> [repo\_crawler\_lambda\_function\_arn](#output\_repo\_crawler\_lambda\_function\_arn) | The Amazon Resource Name (ARN) of the Repo Crawler Lambda function. |
+| <a name="output_repo_crawler_lambda_function_name"></a> [repo\_crawler\_lambda\_function\_name](#output\_repo\_crawler\_lambda\_function\_name) | n/a |
 <!-- END_TF_DOCS -->
