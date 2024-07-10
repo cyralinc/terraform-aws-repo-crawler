@@ -34,7 +34,7 @@ module "cyral_repo_crawler" {
 
 ## Network Considerations
 
-In order for the crawler to acess databases that are not internet accessible a VPC and Subnets will need to be provided via the `vpc_id` and `subnet_ids` variables. The Provided subnets will need internet access to communicate with the controlplane.
+In order for the crawler to access databases that are not internet accessible a VPC and Subnets will need to be provided via the `vpc_id` and `subnet_ids` variables. The Provided subnets will need outbound internet access to communicate with the controlplane.
 If the database is internet accessible you can skip the `vpc_id` and `subnet_ids` variables
 
 ## Secrets
@@ -71,7 +71,7 @@ resource "aws_secretsmanager_secret_version" "repo_secret_version" {
 
 ## Data Repo Scan Schedule (Event Bridge Rule)
 
-In order to create a scheduled scan you'll have to create an event bridge rule with the correct permissions. The following example is fairly straight forward.
+In order to create a scheduled scan you'll have to create an event bridge rule with the correct permissions. The following example is fairly straight forward:
 
 ```terraform
 locals {
@@ -160,7 +160,7 @@ You can provide an Include or Exclude type approach leveraging the `repo-include
 
 #### Snowflake
 
-If you are going to crawl a snowflake repository you will need to provide the appropriate `repo-advanced` section
+If you are going to crawl a snowflake repository you will need to provide the appropriate `repo-advanced` section.
 
 #### Oracle
 
