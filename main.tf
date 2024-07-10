@@ -16,7 +16,6 @@ locals {
   function_name             = var.crawler_name != "" ? var.crawler_name : "cyral-repo-crawler-${random_id.this.hex}"
   dynamodb_cache_table_name = "${local.function_name}-${var.dynamodb_cache_table_name_suffix}"
   cyral_secret_arn          = var.cyral_secret_arn != "" ? var.cyral_secret_arn : aws_secretsmanager_secret.cyral_secret[0].arn
-  repo_secret_arn           = var.repo_secret_arn != "" ? var.repo_secret_arn : aws_secretsmanager_secret.repo_secret[0].arn
 }
 
 data "aws_partition" "current" {}
@@ -41,10 +40,7 @@ data "aws_iam_policy_document" "execution_policy" {
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
     effect    = "Allow"
-    resources = [
-      local.cyral_secret_arn,
-      local.repo_secret_arn,
-    ]
+    resources = concat([local.cyral_secret_arn],var.repo_secret_arns)
   }
 
   # Allows access to write CloudWatch logs.
@@ -115,6 +111,7 @@ resource "aws_iam_role" "this" {
 }
 
 resource "aws_security_group" "this" {
+  count = length(var.vpc_id) > 0 ? 1 : 0
   name        = local.function_name
   description = "Cyral Repo Crawler security group"
   vpc_id      = var.vpc_id
@@ -133,11 +130,7 @@ resource "aws_secretsmanager_secret" "cyral_secret" {
   description = "Cyral API credentials (client ID and secret)"
 }
 
-resource "aws_secretsmanager_secret" "repo_secret" {
-  count       = var.repo_secret_arn != "" ? 0 : 1
-  name        = "/${local.function_name}/RepoSecret"
-  description = "Repository credentials (username and password)"
-}
+
 
 resource "aws_secretsmanager_secret_version" "cyral_secret_version" {
   count         = var.cyral_secret_arn != "" ? 0 : 1
@@ -146,17 +139,6 @@ resource "aws_secretsmanager_secret_version" "cyral_secret_version" {
     {
       client-id     = var.cyral_client_id,
       client-secret = var.cyral_client_secret,
-    }
-  )
-}
-
-resource "aws_secretsmanager_secret_version" "repo_secret_version" {
-  count         = var.repo_secret_arn != "" ? 0 : 1
-  secret_id     = aws_secretsmanager_secret.repo_secret[0].id
-  secret_string = jsonencode(
-    {
-      username = var.repo_username,
-      password = var.repo_password,
     }
   )
 }
@@ -170,9 +152,12 @@ resource "aws_lambda_function" "this" {
   runtime       = "provided.al2"
   handler       = "bootstrap"
 
-  vpc_config {
-    security_group_ids = [aws_security_group.this.id]
-    subnet_ids         = var.subnet_ids
+  dynamic vpc_config {
+    for_each = length(var.vpc_id) > 0 ? [1] : []
+    content {
+      security_group_ids = [aws_security_group.this[0].id]
+      subnet_ids         = var.subnet_ids
+    }
   }
 
   environment {
@@ -199,52 +184,3 @@ resource "aws_dynamodb_table" "this" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "this" {
-  name                = "${local.function_name}-event-rule"
-  description         = "Runs the Repo Crawler Lambda function as specified by the scheduled expression."
-  schedule_expression = var.schedule_expression
-}
-
-resource "aws_cloudwatch_event_target" "this" {
-  rule  = aws_cloudwatch_event_rule.this.name
-  arn   = aws_lambda_function.this.arn
-  input = jsonencode(
-    {
-      config = {
-        repo-name              = var.repo_name,
-        repo-type              = var.repo_type,
-        repo-host              = var.repo_host,
-        repo-port              = var.repo_port,
-        repo-database          = var.repo_database,
-        repo-sample-size       = var.repo_sample_size,
-        repo-max-query-timeout = var.repo_query_timeout,
-        repo-max-open-conns    = var.repo_max_open_conns,
-        repo-max-parallel-dbs  = var.repo_max_parallel_dbs,
-        repo-max-concurrency   = var.repo_max_concurrency,
-        repo-include-paths     = var.repo_include_paths,
-        repo-exclude-paths     = var.repo_exclude_paths,
-        repo-creds-secret-arn  = local.repo_secret_arn
-        repo-advanced = {
-          snowflake = {
-            account   = var.snowflake_account,
-            role      = var.snowflake_role,
-            warehouse = var.snowflake_warehouse,
-          },
-          oracle = {
-            service-name = var.oracle_service
-          },
-          connection-string-args = var.connection-string-args
-        },
-        data-classification = var.enable_data_classification,
-        account-discovery   = var.enable_account_discovery,
-      }
-    }
-  )
-}
-
-resource "aws_lambda_permission" "this" {
-  function_name = aws_lambda_function.this.function_name
-  action        = "lambda:InvokeFunction"
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.this.arn
-}
